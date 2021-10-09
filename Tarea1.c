@@ -177,33 +177,7 @@ int main(int argc, char *argv[]){
     }else{
         printf("Solo puedes pasar como proceso: MEDIA, MEDIANA O SOBEL %s\n",tipo_proceso);
     }
-
     
-
-    //Menu para las distintas opciones
-    /*do{
-        printf("Que filtrado quieres realizar?:\n");
-        printf("1.Filtrado por media:\n");
-        printf("2.Filtrado por mediana\n");
-        printf("3.Deteccion de bordes SOBEL\n");
-        printf("4.Salir\n");
-        printf("Opcion:");
-        //Limpieza del buffer
-        fflush( stdin );
-        scanf("%c", &opcion);
-        switch(opcion){
-
-            case '1': printf("Has elegido el filtrado por mediana\n");
-                break;
-            case '2': printf("Has elegido el filtrado por mediana\n");
-                break;
-            case '3': printf("Has elegido el filtrado por mediana\n");
-                break;
-            case '4': printf("Has elegido el filtrado por mediana\n");
-                break;
-            default: printf("Introduce opcion valida\n");
-        }
-    }while(opcion != '4');*/
     return 0;
 
 }
