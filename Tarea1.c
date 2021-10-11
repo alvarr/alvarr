@@ -15,12 +15,12 @@
 void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz){
     FILE *f1;
     f1 = fopen(nombre_fichero,"rb");
+
     if(f1){
         //Lectura del fichero
         for(int i = 0; i < tamanyo; i++){
             for(int j = 0; j < tamanyo; j++){
-                //Leemos caracter por caracter
-                matriz[i][j] = getc(f1);
+                fread(&matriz[i][j],sizeof(unsigned char), 1, f1);
             }
         }
         fclose(f1);
@@ -34,7 +34,7 @@ void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int t
     f1 = fopen(imagen_salida, "wb");
     for(int i = 0;i<tamanyo; i++){
         for(int j = 0;j<tamanyo;j++){
-            fprintf(f1,"%c", matrizSalida[i][j]);
+            fwrite(&matrizSalida[i][j],sizeof(unsigned char),1,f1);
         }
     }
     fclose(f1);
@@ -49,7 +49,7 @@ void ordenarVector(unsigned char elementos[]){
         for (int j = i+1; j < ELEMENTOS; j++){
            // printf("ordenar %d %d\n", i,j);
             if(elementos[i] > elementos[j]){
-                
+            
                 elemento_auxiliar = elementos[j];
                 elementos[j] = elementos[i];
                 elementos[i] = elemento_auxiliar;
@@ -63,8 +63,8 @@ void ordenarVector(unsigned char elementos[]){
 void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
     printf("Filtrado por Media");
 
-    unsigned char **matrizSalida, elementoSeleccionado, elementos[9], media;
-    media = 0;
+    unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
+    int media = 0;
     matrizSalida = (unsigned char **)malloc(tamanyo*sizeof(unsigned char *));
     for(int i = 0; i<tamanyo;i++){
         matrizSalida[i] = (unsigned char *)malloc(tamanyo*sizeof(unsigned char));
@@ -78,8 +78,8 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
                 matrizSalida[i][j] == matriz[i][j];
             }else{
                 media = matriz[i-1][j-1] +matriz[i][j-1]+ matriz[i+1][j-1] +matriz[i-1][j] +matriz[i][j] +matriz[i+1][j] +matriz[i-1][j+1] + matriz[i][j+1] +matriz[i+1][j+1] ;
-                media = (unsigned char)fabs(media/9);
-                matrizSalida[i][j] = media;
+                media = fabs(media/9);
+                matrizSalida[i][j] = (unsigned char)media;
             }
         }
         guardarImagenSalida(matrizSalida,imagen_salida,tamanyo);
@@ -116,14 +116,32 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
             }
         }
     }
-    printf("Filtrado por Mediana");
+    printf("Filtrado por Mediana\n");
     guardarImagenSalida(matrizSalida,imagen_salida,tamanyo);
 
 }
 
-void deteccionBordes(unsigned char **matriz, char *imagenSalida, int tamanyo){
-    printf("Filtrado SOBEL");
+void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
+    unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
+    matrizSalida = (unsigned char **)malloc(tamanyo*sizeof(unsigned char *));
+    for(int i = 0; i<tamanyo;i++){
+        matrizSalida[i] = (unsigned char *)malloc(tamanyo*sizeof(unsigned char));
+    }
 
+    for(int i = 0;i<tamanyo;i++){
+        for(int j = 0;j<tamanyo;j++){
+            elementoSeleccionado = matriz[i][j];
+
+            if(i == 0 || j == 0 || i == (tamanyo-1) || j == (tamanyo-1)){
+                matrizSalida[i][j] ==matriz[i][j];
+            }else{
+               
+                matriz[i][j] = elementos[4];
+            }
+        }
+    }
+    printf("Filtrado SOBEL");
+    guardarImagenSalida(matrizSalida,imagen_salida,tamanyo);
 }
 
 //Guarda en un fichero los parámetros de ejecución, fichero de entrada, fichero de salida, filtrado escogido y tiempo de ejecucion
@@ -141,6 +159,7 @@ void ficheroSalida(char *imagen_entrada , char *imagen_salida, char *fichero_sal
 	fprintf(f1,"Tiempo de ejecucion: %f\n",  t_ejecucion);
 
 }
+
 
 int main(int argc, char *argv[]){
     clock_t t_inicio, t_fin;
@@ -182,6 +201,8 @@ int main(int argc, char *argv[]){
     }
     //Lectura de matriz
     leerArchivo(imagen_entrada,tamanyo_matriz,matriz);
+    //guardarImagenSalida(matriz,imagen_salida,tamanyo_matriz);
+    //return 0;
 
     if(strcmp("MEDIA",tipo_proceso)==0){
         filtradoMedia(matriz,imagen_salida,tamanyo_matriz);
