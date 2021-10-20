@@ -11,7 +11,7 @@
 #include <string.h>
 #include <math.h>
 
-#define N 1200
+#define N 12
 
 /*Reakuza los pasos de la primera iteración*/
 void primeraIteracion(double **matriz, double *v_uni, double *v_aux){
@@ -41,7 +41,7 @@ void primeraIteracion(double **matriz, double *v_uni, double *v_aux){
 }
 
 /*Realiza los pasos de las iteraciones impares*/
-double calculoImpar(double **matriz, double *v_uni, double *v_aux, double *v_norma,int *num_normas){
+double calculoImpar(double **matriz, double *v_uni, double *v_aux){
 
     //Multiplicamos la matriz por el vector resultado de la anterior iteracion y almacenamos el resultado en el vector auxiliar
     double a;
@@ -65,22 +65,14 @@ double calculoImpar(double **matriz, double *v_uni, double *v_aux, double *v_nor
         v_aux[i]=v_aux[i]+a;
     }
 
-    //realizamos la normalización del vector obtenido 
-    //Obtenemos la norma
-    a = 0;
-    for(int i = 0;i<N;i++){
-        a = a +(v_aux[i]*v_aux[i]);
-    }   
-    a=sqrt(a);
-    v_norma[*num_normas] = a;
+    //Dividimos entre el valor mayor absoluto
+    a=1;
 
     //dividimos todo el vector entre la norma obtenida
     for(int i = 0;i<N;i++){
         v_aux[i]=v_aux[i]/a;
         v_uni[i]=v_aux[i];
     } 
-  *num_normas=*num_normas+1;
-
 }
 
 /*Realiza los pasos de las iteraciones pares*/
@@ -102,13 +94,13 @@ void calculoPar(double **matriz, double *v_uni, double *v_aux){
 }
 
 /*Realiza según el número de iteración que sea una operación u otra*/
-void realizarIteraciones(int num_ite, double **matriz,double *v_uni,double *v_aux,double *v_norma, int *num_normas){
+void realizarIteraciones(int num_ite, double **matriz,double *v_uni,double *v_aux){
     for(int i = 0;i<num_ite;i++){
 
         if(i==0){
             primeraIteracion(matriz, v_uni, v_aux);
         }else if(i%2 != 0){ 
-               calculoImpar(matriz, v_uni, v_aux, v_norma, num_normas);
+               calculoImpar(matriz, v_uni, v_aux);
             
         }else{
             calculoPar(matriz, v_uni, v_aux);
@@ -117,40 +109,32 @@ void realizarIteraciones(int num_ite, double **matriz,double *v_uni,double *v_au
 }
 
 /*Guardar en un fichero información sobre los parámetros de entrada, normas calculadas, norma vector final, tiempos de ejecución, guardado y generado de matriz y total*/
-void guardarResumen(FILE *f2, char nom_fich_resm[],char nom_fich_matr[],  int num_iteraciones, int num_normas, double norma_final, double t_gen, double t_guar, double t_ejec, double t_global, double *v_norma){
-
-    f2 = fopen(nom_fich_resm,"w");
-    if(f2==NULL){
+void guardarResumen(char nom_fich_resm[],char nom_fich_matr[],  int num_iteraciones, double t_gen, double t_guar, double t_ejec, double t_global){
+    FILE *f1;
+    f1 = fopen(nom_fich_resm,"w");
+    if(f1==NULL){
         printf("No se puede abrir el fichero");
     }
 
-    fprintf(f2,"Numero de iteraciones: %i \n", num_iteraciones);
-    fprintf(f2,"Nombre fichero salida: %s \n", nom_fich_resm);
-    fprintf(f2,"Nombre fichero matriz: %s \n", nom_fich_matr);
-    fprintf(f2,"Normas calculadas:  %i \n", num_normas);
-    for(int i = 1; i <= num_normas;i++){
-        fprintf(f2,"Norma x%i:  %f \n",i*2, v_norma[i-1]);
-    }
-    fprintf(f2,"Norma vector final:  %f \n", norma_final);
-    fprintf(f2,"Tiempo(milisengundos) de generacion de matriz:  %f \n", t_gen);
-    fprintf(f2,"Tiempo(milisengundos) de guardado de matriz:  %f \n", t_guar);
-    fprintf(f2,"Teimpo(milisengundos) de ejecucion:  %f \n", t_ejec);
-    fprintf(f2,"Tiempo(milisengundos) global:  %f \n", t_global);
+    fprintf(f1,"Numero de iteraciones: %i \n", num_iteraciones);
+    fprintf(f1,"Nombre fichero salida: %s \n", nom_fich_resm);
+    fprintf(f1,"Nombre fichero matriz: %s \n", nom_fich_matr);
     
-    fclose(f2);
+    fprintf(f1,"Tiempo(milisengundos) de generacion de matriz:  %f \n", t_gen);
+    fprintf(f1,"Tiempo(milisengundos) de guardado de matriz:  %f \n", t_guar);
+    fprintf(f1,"Teimpo(milisengundos) de ejecucion:  %f \n", t_ejec);
+    fprintf(f1,"Tiempo(milisengundos) global:  %f \n", t_global);
+    
+    fclose(f1);
 }
 
 /*Imprime información sobre los parámetros de entrada, normas calculadas, norma vector final, tiempos de ejecución, guardado y generado de matriz y total*/
-void imprimirResumen(int num_iteraciones, char *nom_fich_sal, char *nom_fich_matr, int num_normas, double norma_final, double t_gen, double t_guar, double t_ejec, double t_global, double *v_norma){
+void imprimirResumen(int num_iteraciones, char *nom_fich_sal, char *nom_fich_matr, double t_gen, double t_guar, double t_ejec, double t_global){
 
     printf("Numero de iteraciones: %i \n", num_iteraciones);
     printf("Nombre fichero salida: %s \n", nom_fich_sal);
     printf("Nombre fichero matriz: %s \n", nom_fich_matr);
-    for(int i = 1; i <= num_normas;i++){
-        printf("Norma x%i:  %f \n",i*2, v_norma[i-1]);
-    }
-    printf("Normas calculadas:  %i \n", num_normas);
-    printf("Norma vector final:  %f \n", norma_final); 
+
     printf("Tiempo(milisengundos) de generacion de matriz:  %f  \n", t_gen);
     printf("Tiempo(milisengundos) de guardado de matriz:  %f \n", t_guar);
     printf("Tiempo(milisengundos) de ejecucion:  %f \n", t_ejec);
@@ -158,7 +142,8 @@ void imprimirResumen(int num_iteraciones, char *nom_fich_sal, char *nom_fich_mat
 }
 
 /*Guarda en un fichero la matriz*/
-void guardarMatriz(double **matriz, FILE *f1, char *nom_fich_matr ){
+void guardarMatriz(double **matriz, char *nom_fich_matr ){
+    FILE *f1;
     f1 = fopen(nom_fich_matr,"wb");
     //printf("%s \n", nom_fich_matr);
     for(int i = 0; i < N;i++){
@@ -169,25 +154,28 @@ void guardarMatriz(double **matriz, FILE *f1, char *nom_fich_matr ){
 
 /*Genera una matriz de tamaño NxN*/
 void generarMatriz(double **matriz){
-
+    double aux;
     for(int x =0; x<N;x++){
         for(int y =0; y<N;y++){
-            if(x == y){
-                matriz[x][y] = 0;
-            }else if(x < y){
-                matriz[x][y] =  (rand( ) % 1000 ) / 1000.0f;
+            if(x == y){ //Elementos de la diagonal
+                matriz[x][y] = 1;
+            }else if(x < y){ //Elementos triangular inferior
+                aux = rand( ) % 50000;
+                matriz[x][y] = aux/1000;
               
-            }else{
-                matriz[x][y] = -1*((rand( ) % 1000 ) / 1000.0f);
+            }else{//Elementos triangular superior
+                aux = -1*(rand( ) % 50000);
+                matriz[x][y] = aux/1000;
             }
-           // printf("%1.3f",matriz[x][y]);
+            //printf("%.1lf ", matriz[x][y]);
         }
-        //  printf("\n");
+        //printf("\n");
     }
 }
 
 /*Lee los datos de un fichero para rellenar una matriz*/
-void leerFichero(double **matriz, FILE *f1, char *nom_fich_matr){
+void leerFichero(double **matriz,char *nom_fich_matr){
+    FILE *f1;
     f1 = fopen(nom_fich_matr,"rb");
    double aux[1] = {0};
     for(int i = 0; i < N;i++){
@@ -235,10 +223,10 @@ int main(int argc, char *argv[]){
     }
 
     //Declaramos y reservamos memoria del vector aux
-    double *v_aux;
-    v_aux = (double *)malloc(N*sizeof(double));
+    double *v_auxiliar;
+    v_auxiliar = (double *)malloc(N*sizeof(double));
     for(int i=0;i<N;i++){
-        v_aux[i]=0;
+        v_auxiliar[i]=0;
     }
 
     //Declaramos y reservamos memoria de la matriz
@@ -257,44 +245,39 @@ int main(int argc, char *argv[]){
         t_ini = clock();
         generarMatriz(matriz);
         t_fin= clock();
+        //Tiempo de generación de matriz
         t_gen = ((double)(t_fin-t_ini)/CLOCKS_PER_SEC)*1000;
        
         t_ini=clock();
-        guardarMatriz(matriz, f1, nom_fich_matr);
+        guardarMatriz(matriz, nom_fich_matr);
         t_fin = clock();
+        //Tiempo de guardado de matriz
         t_guar = ((double)(t_fin-t_ini)/CLOCKS_PER_SEC)*1000;
     }else{
         fclose(f1);
-        leerFichero(matriz, f1, nom_fich_matr);
+        leerFichero(matriz, nom_fich_matr);
         t_guar = 0;
     }
     
     t_ini = clock();
     
     //Realizamos las iteraciones
-    realizarIteraciones(num_ite, matriz, v_uni, v_aux, v_norma, &num_normas);
-    
-
-    //Calculamos norma del vector final 
-    norma_final = 0;
-    for(int x = 0;x<N;x++){
-            norma_final = norma_final + (v_aux[x]*v_aux[x]);
-    
-    }
-    norma_final = sqrt(norma_final);
+    realizarIteraciones(num_ite, matriz, v_inicial, v_auxiliar);
 
     t_fin= clock();
+    //Tiempo que tarda en realizar las iteraciones y sus respectivas operaciones
     t_ejec = ((double)(t_fin-t_ini)/CLOCKS_PER_SEC)*1000;
 
 
     t_fint = clock();
+    //Tiempo global de todo el programa
     t_global = ((double)(t_fint-t_init)/CLOCKS_PER_SEC)*1000;
 
     //Guardamos los datos obtenidos en in fichero 
-    guardarResumen(f2, nom_fich_sal, nom_fich_matr, num_ite, num_normas, norma_final, t_gen, t_guar, t_ejec, t_global, v_norma);
+    guardarResumen(nom_fich_sal, nom_fich_matr, num_ite, t_gen, t_guar, t_ejec, t_global);
 
     //Imprimimos por pantalla los datos obtenidos
-    imprimirResumen(num_ite, nom_fich_sal, nom_fich_matr, num_normas, norma_final, t_gen, t_guar, t_ejec, t_global,v_norma);
+    imprimirResumen(num_ite, nom_fich_sal, nom_fich_matr, t_gen, t_guar, t_ejec, t_global);
 
     return 0;
 }
