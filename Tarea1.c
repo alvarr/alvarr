@@ -41,7 +41,7 @@ void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int t
 }
 
 void ordenarVector(unsigned char elementos[]){
-    unsigned char elemento, array_auxiliar[9], elemento_auxiliar;
+    int  elemento_auxiliar;
     //qsort(elementos, tamanyo, sizeof(unsigned char));
 
     for(int i = 0;i<(ELEMENTOS-1);i++){
@@ -88,7 +88,8 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
 
 void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
     
-    unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
+    unsigned char **matrizSalida, elementoSeleccionado,elementos[9];
+
     matrizSalida = (unsigned char **)malloc(tamanyo*sizeof(unsigned char *));
     for(int i = 0; i<tamanyo;i++){
         matrizSalida[i] = (unsigned char *)malloc(tamanyo*sizeof(unsigned char));
@@ -101,10 +102,10 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
             if(i == 0 || j == 0 || i == (tamanyo-1) || j == (tamanyo-1)){
                 matrizSalida[i][j] ==matriz[i][j];
             }else{
-                elementos[0] =  matriz[i-1][j-1];
+                elementos[0] = matriz[i-1][j-1];
                 elementos[1] = matriz[i][j-1];
                 elementos[2] = matriz[i+1][j-1];
-                elementos[3] = +matriz[i-1][j] ;
+                elementos[3] = matriz[i-1][j] ;
                 elementos[4] = matriz[i][j] ;
                 elementos[5] = matriz[i+1][j] ;
                 elementos[6] = matriz[i-1][j+1];
@@ -112,7 +113,7 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
                 elementos[8] = matriz[i+1][j+1];
                 ordenarVector(elementos);
                 
-                matriz[i][j] = elementos[4];
+                matrizSalida[i][j] = elementos[4];
             }
         }
     }
@@ -137,7 +138,7 @@ void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
             if(i == 0 || j == 0 || i == (tamanyo-1) || j == (tamanyo-1)){
                 matrizSalida[i][j] ==matriz[i][j];
             }else{
-                elementos[0] =  matriz[i-1][j-1];
+                elementos[0] = matriz[i-1][j-1];
                 elementos[1] = matriz[i][j-1];
                 elementos[2] = matriz[i+1][j-1];
                 elementos[3] = matriz[i-1][j] ;
@@ -149,7 +150,7 @@ void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
 
                 c = (elementos[0] * -1) + (elementos[1] * 0) + (elementos[2] * 1) + (elementos[3] * -2) + (elementos[4] * 0) + (elementos[5] * 2) + (elementos[6] *-1) + (elementos[7] * 0) + (elementos[8] * 1);
                 f = (elementos[0] * -1) + (elementos[1] * -2) + (elementos[2] * -1) + (elementos[3] * 0) + (elementos[4] * 0) + (elementos[5] * 0) + (elementos[6] *1) + (elementos[7] * 2) + (elementos[8] * 1);
-                matriz[i][j] = (unsigned char)sqrt(pow(c,2)+pow(f,2));
+                matrizSalida[i][j] = (unsigned char)sqrt(pow(c,2)+pow(f,2));
             }
         }
     }
