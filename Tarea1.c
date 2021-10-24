@@ -12,6 +12,13 @@
 #include <time.h>
 #define ELEMENTOS 9
 
+/**
+ * @brief Lee la imagen en formato raw, que es binario
+ * 
+ * @param nombre_fichero Nombre del fichero de imagen raw
+ * @param tamanyo tamanyo de la matriz
+ * @param matriz matriz que guardara la imagen raw
+ */
 void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz){
     FILE *f1;
     f1 = fopen(nombre_fichero,"rb");
@@ -29,6 +36,13 @@ void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz){
     }
 }
 
+/**
+ * @brief Guarda una imagen en formato raw, que es binario
+ * 
+ * @param matrizSalida matriz resultado del filtrado
+ * @param imagen_salida nombre del fichero que guardará la imagen de salida
+ * @param tamanyo tamanyo de la mtriz
+ */
 void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int tamanyo){
     FILE *f1;
     f1 = fopen(imagen_salida, "wb");
@@ -40,6 +54,11 @@ void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int t
     fclose(f1);
 }
 
+/**
+ * @brief Ordena un vector de menor a mayor
+ * 
+ * @param elementos vector que contiene los numeros a ordenar
+ */
 void ordenarVector(unsigned char elementos[]){
     int  elemento_auxiliar;
     //qsort(elementos, tamanyo, sizeof(unsigned char));
@@ -60,6 +79,13 @@ void ordenarVector(unsigned char elementos[]){
 
 }
 
+/**
+ * @brief Filtra la imagen usando la media de los elementos de alrededor
+ * 
+ * @param matriz matriz que tenemos que filtrar
+ * @param imagen_salida nombre del fichero de salida que guardara la imagen
+ * @param tamanyo tamanño de la matriz
+ */
 void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
     printf("Filtrado por Media");
 
@@ -86,6 +112,13 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
     }
 }
 
+/**
+ * @brief Filtra la imagen usando la mediana de los elementos de alrededor
+ * 
+ * @param matriz matriz que contiene la imagen raw
+ * @param imagen_salida nombre del fichero que contiene la imagen de salida
+ * @param tamanyo tamanño de la matriz
+ */
 void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
     
     unsigned char **matrizSalida, elementoSeleccionado,elementos[9];
@@ -122,6 +155,13 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
 
 }
 
+/**
+ * @brief Filtra la imagen usando la técnica de detección de bordes SOBEL
+ * 
+ * @param matriz matriz que contiene la imagen raw
+ * @param imagen_salida nombre del fichero que contiene la imagen de salida
+ * @param tamanyo tamanño de la matriz
+ */
 void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
     unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
     int c = 0, f = 0;
@@ -159,6 +199,15 @@ void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
 }
 
 //Guarda en un fichero los parámetros de ejecución, fichero de entrada, fichero de salida, filtrado escogido y tiempo de ejecucion
+/**
+ * @brief Guarda los datos de ejecución del programa en un fichero txt
+ * 
+ * @param imagen_entrada nombre del fichero que contiene la imagen que pasamos al programa
+ * @param imagen_salida nombre del fichero que contiene la imagen filtrada
+ * @param fichero_salida nombre del fichero que contiene los parámetros de ejecución
+ * @param tipo_proceso nombre del filtrado escogido
+ * @param t_ejecucion tiempo que tarda en ejecutarse el programa
+ */
 void ficheroSalida(char *imagen_entrada , char *imagen_salida, char *fichero_salida, char *tipo_proceso, double t_ejecucion){
     FILE *f1;
 	
@@ -174,7 +223,13 @@ void ficheroSalida(char *imagen_entrada , char *imagen_salida, char *fichero_sal
 
 }
 
-
+/**
+ * @brief Función principal
+ * 
+ * @param argc Número de parametros que pasamos al ejecutar el programa
+ * @param argv Parametros que pasamos al ejecutar el programa
+ * @return int 
+ */
 int main(int argc, char *argv[]){
     clock_t t_inicio, t_fin;
     double t_ejecucion;
@@ -182,7 +237,7 @@ int main(int argc, char *argv[]){
     
     //Indicamos un parámetro de entrada que explique que información hay que pasar como parametro
     if(argc == 2 && strcmp("HELP",argv[1])==0){
-        printf("Debes indicar el nombre de la imagen de entrada ,imange de salida, fichero de resultados de salida, y el tipo de proceso(MEDIA, MEDIANA O SOBEL). Por ejemplo './Tarea1 fotoEntrada fotoSalida resultadosSalida MEDIA'\n");
+        printf("Debes indicar el nombre de la imagen de entrada ,imange de salida, fichero de resultados de salida, sin formato, y el tipo de proceso(MEDIA, MEDIANA O SOBEL). Por ejemplo './Tarea1 fotoEntrada fotoSalida resultadosSalida MEDIA'\n");
         return 0;
     }
         
@@ -204,6 +259,10 @@ int main(int argc, char *argv[]){
     imagen_salida = argv[2];
     fichero_salida = argv[3];
     tipo_proceso = argv[4];
+    strcat(imagen_entrada,".raw");
+    strcat(imagen_salida,".raw"); 
+    strcat(fichero_salida,".txt");
+
     if (stat(imagen_entrada, &sb) == -1) {
         return 0;
     }

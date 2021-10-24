@@ -10,8 +10,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 
-#define N 12
+#define N 1200
 
 /*Reakuza los pasos de la primera iteración*/
 void primeraIteracion(double **matriz, double *v_uni, double *v_aux){
@@ -26,25 +27,18 @@ void primeraIteracion(double **matriz, double *v_uni, double *v_aux){
         }
         v_aux[i] = a;
     }
-
-    //Usamos el vector unitario para transformarlo en rand(vector con valores aleatorios |0|<x<|1|)
-    for(int i=0;i<N;i++){
-        v_uni[i]=0;
-        v_uni[i]=((rand()% 2000)-1000)/1000.0f;
-    }
-
-    //Realizamos la suma del vector auxiliar y el vecto unitario y lo guardamos en el primero
-    for(int i=0;i<N;i++){
-        v_aux[i]=v_aux[i]+v_uni[i];
-        v_uni[i] = v_aux[i];
+   
+    for(int i = 0;i < N;i++){
+        v_uni[i]=v_aux[i];
     }
 }
 
 /*Realiza los pasos de las iteraciones impares*/
-double calculoImpar(double **matriz, double *v_uni, double *v_aux){
-
+double siguienteIteracion(double **matriz, double *v_uni, double *v_aux){
+    
     //Multiplicamos la matriz por el vector resultado de la anterior iteracion y almacenamos el resultado en el vector auxiliar
-    double a;
+    double a,mayor_absoluto,aux,valor_mayor;
+    int mayor_indice;
     for(int i = 0;i < N;i++){ 
         a=0;
         for(int u = 0;u < N;u++){
@@ -53,72 +47,57 @@ double calculoImpar(double **matriz, double *v_uni, double *v_aux){
         v_aux[i] = a;
     }
 
-    //Obtenemos la norma del vector anterior
-    a = 0;
-    for(int i = 0;i<N;i++){
-        a = a +(v_uni[i]*v_uni[i]);
-    }   
-    a=sqrt(a);
-
-    //Sumamos al primer vector obtenido el escalar
+    //Buscamos el valor mayor absoluto
+    mayor_absoluto = 0;
     for(int i = 0;i < N;i++){
-        v_aux[i]=v_aux[i]+a;
-    }
-
-    //Dividimos entre el valor mayor absoluto
-    a=1;
-
-    //dividimos todo el vector entre la norma obtenida
-    for(int i = 0;i<N;i++){
-        v_aux[i]=v_aux[i]/a;
-        v_uni[i]=v_aux[i];
-    } 
-}
-
-/*Realiza los pasos de las iteraciones pares*/
-void calculoPar(double **matriz, double *v_uni, double *v_aux){
-    //Multiplicamos la matriz por el vector unitario y almacenamos el resultado en el vector auxiliar
-    double a;
-
-    for(int x = 0;x < N;x++){
-        a = 0;
-        for(int y = 0; y < N;y++){
-            a = a+(matriz[x][y]*v_uni[y]);
+        aux = sqrt(v_aux[i]*v_aux[i]);
+        if( aux > mayor_absoluto){
+            mayor_absoluto = aux;
+            mayor_indice = i;
         }
-        v_aux[x]=a;
     }
-    for(int i =0;i<N;i++){
+    valor_mayor=v_aux[mayor_indice];
+
+    //dividimos todo el vector entre el mayor valor absoluto
+    for(int i = 0;i<N;i++){
+        v_aux[i]=v_aux[i]/valor_mayor;
         v_uni[i]=v_aux[i];
-    }
+
+        //printf(" %.3lf \n", v_uni[i]);
+    } 
+    return valor_mayor;
     
 }
 
 /*Realiza según el número de iteración que sea una operación u otra*/
-void realizarIteraciones(int num_ite, double **matriz,double *v_uni,double *v_aux){
-    for(int i = 0;i<num_ite;i++){
-
-        if(i==0){
+void realizarIteraciones(int num_ite, double **matriz,double *v_uni,double *v_aux, double *v_absoluto){
+    for(int i = 1;i<=num_ite;i++){
+        if(i==1){
             primeraIteracion(matriz, v_uni, v_aux);
-        }else if(i%2 != 0){ 
-               calculoImpar(matriz, v_uni, v_aux);
-            
-        }else{
-            calculoPar(matriz, v_uni, v_aux);
+        }else{ 
+            v_absoluto[i-2] = siguienteIteracion(matriz, v_uni, v_aux);
         }
     }
+    
 }
 
 /*Guardar en un fichero información sobre los parámetros de entrada, normas calculadas, norma vector final, tiempos de ejecución, guardado y generado de matriz y total*/
-void guardarResumen(char nom_fich_resm[],char nom_fich_matr[],  int num_iteraciones, double t_gen, double t_guar, double t_ejec, double t_global){
+void guardarResumen(char nom_fich_resm[],char nom_fich_matr[],  int num_iteraciones, double t_gen, double t_guar, double t_ejec, double t_global,double *v_absoluto){
     FILE *f1;
     f1 = fopen(nom_fich_resm,"w");
     if(f1==NULL){
         printf("No se puede abrir el fichero");
     }
-
+   
     fprintf(f1,"Numero de iteraciones: %i \n", num_iteraciones);
     fprintf(f1,"Nombre fichero salida: %s \n", nom_fich_resm);
     fprintf(f1,"Nombre fichero matriz: %s \n", nom_fich_matr);
+
+    
+    fprintf(f1,"Valores absolutos: \n");
+    for(int i = 0;(i<num_iteraciones-1);i++){
+        fprintf(f1,"Iteracion %d: %.3lf \n",(i+1), v_absoluto[i]);
+    }
     
     fprintf(f1,"Tiempo(milisengundos) de generacion de matriz:  %f \n", t_gen);
     fprintf(f1,"Tiempo(milisengundos) de guardado de matriz:  %f \n", t_guar);
@@ -129,12 +108,16 @@ void guardarResumen(char nom_fich_resm[],char nom_fich_matr[],  int num_iteracio
 }
 
 /*Imprime información sobre los parámetros de entrada, normas calculadas, norma vector final, tiempos de ejecución, guardado y generado de matriz y total*/
-void imprimirResumen(int num_iteraciones, char *nom_fich_sal, char *nom_fich_matr, double t_gen, double t_guar, double t_ejec, double t_global){
+void imprimirResumen(int num_iteraciones, char *nom_fich_sal, char *nom_fich_matr, double t_gen, double t_guar, double t_ejec, double t_global, double *v_absoluto){
 
     printf("Numero de iteraciones: %i \n", num_iteraciones);
     printf("Nombre fichero salida: %s \n", nom_fich_sal);
     printf("Nombre fichero matriz: %s \n", nom_fich_matr);
 
+    printf("Valores absolutos: \n");
+    for(int i = 0;i<(num_iteraciones-1);i++){
+        printf("Iteracion %d: %.3lf \n",(i+1), v_absoluto[i]);
+    }
     printf("Tiempo(milisengundos) de generacion de matriz:  %f  \n", t_gen);
     printf("Tiempo(milisengundos) de guardado de matriz:  %f \n", t_guar);
     printf("Tiempo(milisengundos) de ejecucion:  %f \n", t_ejec);
@@ -154,22 +137,25 @@ void guardarMatriz(double **matriz, char *nom_fich_matr ){
 
 /*Genera una matriz de tamaño NxN*/
 void generarMatriz(double **matriz){
-    double aux;
+    double aux,a=0;
+    srand(time(NULL));
+    //srand(getpid());
     for(int x =0; x<N;x++){
         for(int y =0; y<N;y++){
+            
             if(x == y){ //Elementos de la diagonal
                 matriz[x][y] = 1;
             }else if(x < y){ //Elementos triangular inferior
-                aux = rand( ) % 50000;
-                matriz[x][y] = aux/1000;
+                aux = rand( ) % 50000 + 1;
+                matriz[x][y] = (double)aux/1000;
               
             }else{//Elementos triangular superior
-                aux = -1*(rand( ) % 50000);
-                matriz[x][y] = aux/1000;
+                aux = -1*(rand( ) % 50000 + 1);
+                matriz[x][y] = (double)aux/1000;
             }
-            //printf("%.1lf ", matriz[x][y]);
+           // printf("%.1lf ", matriz[x][y]);
         }
-        //printf("\n");
+       // printf("\n");
     }
 }
 
@@ -183,7 +169,6 @@ void leerFichero(double **matriz,char *nom_fich_matr){
     }
     fclose(f1);
 }
-
 
 
 int main(int argc, char *argv[]){
@@ -201,11 +186,9 @@ int main(int argc, char *argv[]){
     
     double t_gen, t_guar, t_ejec, t_global, a;
     int diagonal = 0;
-    int num_normas = 0;
-    double norma_final = 0;
     int num_ite = atoi(argv[1]);
     FILE *f1, *f2;
-    srand(time(NULL));
+    
 
     //Fichero de salida
     char *nom_fich_sal =argv[2];
@@ -236,6 +219,11 @@ int main(int argc, char *argv[]){
         matriz[i] = (double *)malloc(N*sizeof(double));
     }
 
+     //Declaramos y reservamos memoria del vector con valores maximos absolutos
+    double *v_absoluto;
+    v_absoluto = (double *)malloc((num_ite-1)*sizeof(double));
+    
+
     //Intentamos abrir el fichero matriz, dependiendo de si existe o no realizamos x operaciones
     f1 = fopen(nom_fich_matr,"rb");
 
@@ -262,7 +250,7 @@ int main(int argc, char *argv[]){
     t_ini = clock();
     
     //Realizamos las iteraciones
-    realizarIteraciones(num_ite, matriz, v_inicial, v_auxiliar);
+    realizarIteraciones(num_ite, matriz, v_inicial, v_auxiliar,v_absoluto);
 
     t_fin= clock();
     //Tiempo que tarda en realizar las iteraciones y sus respectivas operaciones
@@ -272,12 +260,12 @@ int main(int argc, char *argv[]){
     t_fint = clock();
     //Tiempo global de todo el programa
     t_global = ((double)(t_fint-t_init)/CLOCKS_PER_SEC)*1000;
-
+    
     //Guardamos los datos obtenidos en in fichero 
-    guardarResumen(nom_fich_sal, nom_fich_matr, num_ite, t_gen, t_guar, t_ejec, t_global);
-
+    guardarResumen(nom_fich_sal, nom_fich_matr, num_ite, t_gen, t_guar, t_ejec, t_global,v_absoluto);
+    
     //Imprimimos por pantalla los datos obtenidos
-    imprimirResumen(num_ite, nom_fich_sal, nom_fich_matr, t_gen, t_guar, t_ejec, t_global);
+    imprimirResumen(num_ite, nom_fich_sal, nom_fich_matr, t_gen, t_guar, t_ejec, t_global,v_absoluto);
 
     return 0;
 }
