@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////
 // Alvaro Aguilar Sabuco                                        //
-// Computacion Paralela, Practica 0, Tarea 1                    //
-// Fecha: 26/09/2021                                            //
+// Computacion Paralela, Practica 1, Tarea 1                    //
+// Fecha: 02/11/2021                                            //
 //////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
