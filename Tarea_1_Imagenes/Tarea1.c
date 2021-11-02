@@ -19,17 +19,34 @@
  * @param tamanyo tamanyo de la matriz
  * @param matriz matriz que guardara la imagen raw
  */
-void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz){
+void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz, int num_filas, int num_columnas){
     FILE *f1;
     f1 = fopen(nombre_fichero,"rb");
+    int filas = 0, columnas = 0;
+    int lectura_columnas = 0;
 
     if(f1){
         //Lectura del fichero
+        /*
         for(int i = 0; i < tamanyo; i++){
             for(int j = 0; j < tamanyo; j++){
                 fread(&matriz[i][j],sizeof(unsigned char), 1, f1);
             }
+        }*/
+        while(!feof(f1)){
+
+            fread(&matriz[filas][columnas],sizeof(unsigned char), 1, f1);
+            columnas++;
+            if(matriz[filas][columnas] == '\n'){
+                filas++;
+                if(lectura_columnas == 0){
+                    num_columnas = columnas;
+                    lectura_columnas++;
+                }
+                columnas == 0;
+            }
         }
+        num_filas = filas;
         fclose(f1);
     }else{
         printf("Error al abrir el fichero");
@@ -266,7 +283,7 @@ int main(int argc, char *argv[]){
     if (stat(imagen_entrada, &sb) == -1) {
         return 0;
     }
-    tamanyo_matriz = sqrt(sb.st_size);
+    tamanyo_matriz = sb.st_size;
 
     matriz = (unsigned char **)malloc(tamanyo_matriz*sizeof(unsigned char *));
     for(int i = 0;i < tamanyo_matriz; i++){
