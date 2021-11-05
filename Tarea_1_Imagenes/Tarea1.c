@@ -19,7 +19,7 @@
  * @param tamanyo tamanyo de la matriz
  * @param matriz matriz que guardara la imagen raw
  */
-void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz, int filas, int columnas){
+void leerArchivo(char *nombre_fichero,int filas, int columnas, unsigned char **matriz){
     FILE *f1;
     f1 = fopen(nombre_fichero,"rb");
 
@@ -44,11 +44,11 @@ void leerArchivo(char *nombre_fichero,int tamanyo, unsigned char **matriz, int f
  * @param imagen_salida nombre del fichero que guardará la imagen de salida
  * @param tamanyo tamanyo de la mtriz
  */
-void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int tamanyo){
+void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int filas, int columnas){
     FILE *f1;
     f1 = fopen(imagen_salida, "wb");
-    for(int i = 0;i<tamanyo; i++){
-        for(int j = 0;j<tamanyo;j++){
+    for(int i = 0;i<filas; i++){
+        for(int j = 0;j<columnas;j++){
             fwrite(&matrizSalida[i][j],sizeof(unsigned char),1,f1);
         }
     }
@@ -87,21 +87,21 @@ void ordenarVector(unsigned char elementos[]){
  * @param imagen_salida nombre del fichero de salida que guardara la imagen
  * @param tamanyo tamanño de la matriz
  */
-void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
+void filtradoMedia(unsigned char **matriz, char *imagen_salida,int filas, int columnas){
     printf("Filtrado por Media");
 
     unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
     int media = 0;
-    matrizSalida = (unsigned char **)malloc(tamanyo*sizeof(unsigned char *));
-    for(int i = 0; i<tamanyo;i++){
-        matrizSalida[i] = (unsigned char *)malloc(tamanyo*sizeof(unsigned char));
+    matrizSalida = (unsigned char **)malloc(filas*sizeof(unsigned char *));
+    for(int i = 0; i<filas;i++){
+        matrizSalida[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
     }
 
-    for(int i = 0;i<tamanyo;i++){
-        for(int j = 0;j<tamanyo;j++){
+    for(int i = 0;i<filas;i++){
+        for(int j = 0;j<columnas;j++){
             elementoSeleccionado = matriz[i][j];
             //printf("%c\n",elementoSeleccionado);
-            if(i == 0 || j == 0 || i == (tamanyo-1) || j == (tamanyo-1)){
+            if(i == 0 || j == 0 || i == (filas-1) || j == (columnas-1)){
                 matrizSalida[i][j] == matriz[i][j];
             }else{
                 media = matriz[i-1][j-1] +matriz[i][j-1]+ matriz[i+1][j-1] +matriz[i-1][j] +matriz[i][j] +matriz[i+1][j] +matriz[i-1][j+1] + matriz[i][j+1] +matriz[i+1][j+1] ;
@@ -109,7 +109,7 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
                 matrizSalida[i][j] = (unsigned char)media;
             }
         }
-        guardarImagenSalida(matrizSalida,imagen_salida,tamanyo);
+        guardarImagenSalida(matrizSalida,imagen_salida,filas, columnas);
     }
 }
 
@@ -120,20 +120,20 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int tamanyo){
  * @param imagen_salida nombre del fichero que contiene la imagen de salida
  * @param tamanyo tamanño de la matriz
  */
-void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
+void filtradoMediana(unsigned char **matriz, char *imagen_salida, int filas, int columnas){
     
     unsigned char **matrizSalida, elementoSeleccionado,elementos[9];
 
-    matrizSalida = (unsigned char **)malloc(tamanyo*sizeof(unsigned char *));
-    for(int i = 0; i<tamanyo;i++){
-        matrizSalida[i] = (unsigned char *)malloc(tamanyo*sizeof(unsigned char));
+    matrizSalida = (unsigned char **)malloc(filas*sizeof(unsigned char *));
+    for(int i = 0; i<filas;i++){
+        matrizSalida[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
     }
 
-    for(int i = 0;i<tamanyo;i++){
-        for(int j = 0;j<tamanyo;j++){
+    for(int i = 0;i<filas;i++){
+        for(int j = 0;j<columnas;j++){
             elementoSeleccionado = matriz[i][j];
 
-            if(i == 0 || j == 0 || i == (tamanyo-1) || j == (tamanyo-1)){
+            if(i == 0 || j == 0 || i == (filas-1) || j == (columnas-1)){
                 matrizSalida[i][j] ==matriz[i][j];
             }else{
                 elementos[0] = matriz[i-1][j-1];
@@ -152,7 +152,7 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
         }
     }
     printf("Filtrado por Mediana\n");
-    guardarImagenSalida(matrizSalida,imagen_salida,tamanyo);
+    guardarImagenSalida(matrizSalida,imagen_salida,filas , columnas);
 
 }
 
@@ -163,20 +163,20 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int tamanyo){
  * @param imagen_salida nombre del fichero que contiene la imagen de salida
  * @param tamanyo tamanño de la matriz
  */
-void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
+void deteccionBordes(unsigned char **matriz, char *imagen_salida, int filas, int columnas){
     unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
     int c = 0, f = 0;
-    matrizSalida = (unsigned char **)malloc(tamanyo*sizeof(unsigned char *));
-    for(int i = 0; i<tamanyo;i++){
-        matrizSalida[i] = (unsigned char *)malloc(tamanyo*sizeof(unsigned char));
+    matrizSalida = (unsigned char **)malloc(filas*sizeof(unsigned char *));
+    for(int i = 0; i<filas;i++){
+        matrizSalida[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
     }
 
-    for(int i = 0;i<tamanyo;i++){
-        for(int j = 0;j<tamanyo;j++){
+    for(int i = 0;i<filas;i++){
+        for(int j = 0;j<columnas;j++){
             elementoSeleccionado = matriz[i][j];
             
 
-            if(i == 0 || j == 0 || i == (tamanyo-1) || j == (tamanyo-1)){
+            if(i == 0 || j == 0 || i == (filas-1) || j == (columnas-1)){
                 matrizSalida[i][j] ==matriz[i][j];
             }else{
                 elementos[0] = matriz[i-1][j-1];
@@ -196,7 +196,7 @@ void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
         }
     }
     printf("Filtrado SOBEL");
-    guardarImagenSalida(matrizSalida,imagen_salida,tamanyo);
+    guardarImagenSalida(matrizSalida,imagen_salida,filas, columnas);
 }
 
 //Guarda en un fichero los parámetros de ejecución, fichero de entrada, fichero de salida, filtrado escogido y tiempo de ejecucion
@@ -209,7 +209,7 @@ void deteccionBordes(unsigned char **matriz, char *imagen_salida, int tamanyo){
  * @param tipo_proceso nombre del filtrado escogido
  * @param t_ejecucion tiempo que tarda en ejecutarse el programa
  */
-void ficheroSalida(char *imagen_entrada , char *imagen_salida, char *fichero_salida, char *tipo_proceso, double t_ejecucion){
+void ficheroSalida(char *imagen_entrada , char *imagen_salida, char *fichero_salida, char *tipo_proceso, double t_ejecucion, int filas, int columnas){
     FILE *f1;
 	
 	f1 = fopen(fichero_salida,"w");
@@ -238,18 +238,18 @@ int main(int argc, char *argv[]){
     
     //Indicamos un parámetro de entrada que explique que información hay que pasar como parametro
     if(argc == 2 && strcmp("HELP",argv[1])==0){
-        printf("Debes indicar el nombre de la imagen de entrada ,imange de salida, fichero de resultados de salida, sin formato, y el tipo de proceso(MEDIA, MEDIANA O SOBEL). Por ejemplo './Tarea1 fotoEntrada fotoSalida resultadosSalida MEDIA'\n");
+        printf("Debes indicar el nombre de la imagen de entrada ,imange de salida, fichero de resultados de salida, sin formato, el tipo de proceso(MEDIA, MEDIANA O SOBEL) y el número de filas y columnas. Por ejemplo './Tarea1 fotoEntrada fotoSalida resultadosSalida MEDIA 512 512'\n");
         return 0;
     }
         
-    if(argc != 5){
+    if(argc != 7){
         printf("Debes indicar varios paramentros. Para mas ayuda pasa como parametro HELP\n");
         return 0;
     }
 
     struct stat sb;
     char *imagen_entrada,*imagen_salida, *tipo_proceso, *fichero_salida;
-    int tamanyo_matriz;
+    int filas, columnas;
     char opcion;
     unsigned char **matriz;
 
@@ -260,32 +260,30 @@ int main(int argc, char *argv[]){
     imagen_salida = argv[2];
     fichero_salida = argv[3];
     tipo_proceso = argv[4];
+    filas = (int)argv[5];
+    columnas = (int)argv[6];
+    printf("Filas %d y columnas %d", filas,columnas);
     strcat(imagen_entrada,".raw");
     strcat(imagen_salida,".raw"); 
     strcat(fichero_salida,".txt");
 
-    if (stat(imagen_entrada, &sb) == -1) {
-        return 0;
-    }
-    tamanyo_matriz = sb.st_size;
-
-    matriz = (unsigned char **)malloc(tamanyo_matriz*sizeof(unsigned char *));
-    for(int i = 0;i < tamanyo_matriz; i++){
-        matriz[i] = (unsigned char *)malloc(tamanyo_matriz*sizeof(unsigned char));
+    matriz = (unsigned char **)malloc(filas*sizeof(unsigned char *));
+    for(int i = 0;i < filas; i++){
+        matriz[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
     }
     //Lectura de matriz
-    leerArchivo(imagen_entrada,tamanyo_matriz,matriz);
+    leerArchivo(imagen_entrada,filas, columnas,matriz);
     //guardarImagenSalida(matriz,imagen_salida,tamanyo_matriz);
     //return 0;
 
     if(strcmp("MEDIA",tipo_proceso)==0){
-        filtradoMedia(matriz,imagen_salida,tamanyo_matriz);
+        filtradoMedia(matriz,imagen_salida,filas, columnas);
         
     }else if (strcmp("MEDIANA",tipo_proceso)==0){
-        filtradoMediana(matriz,imagen_salida,tamanyo_matriz);
+        filtradoMediana(matriz,imagen_salida,filas, columnas);
         
     }else if (strcmp("SOBEL",tipo_proceso)==0){
-        deteccionBordes(matriz,imagen_salida,tamanyo_matriz);
+        deteccionBordes(matriz,imagen_salida,filas, columnas);
       
     }else{
         printf("Solo puedes pasar como proceso: MEDIA, MEDIANA O SOBEL %s\n",tipo_proceso);
@@ -294,7 +292,7 @@ int main(int argc, char *argv[]){
     t_fin = clock();
     t_ejecucion = ((double)(t_fin-t_inicio)/CLOCKS_PER_SEC)*1000;
 
-    ficheroSalida(imagen_entrada, imagen_salida, fichero_salida, tipo_proceso, t_ejecucion);
+    ficheroSalida(imagen_entrada, imagen_salida, fichero_salida, tipo_proceso, t_ejecucion, filas,  columnas);
     return 0;
 
 }
