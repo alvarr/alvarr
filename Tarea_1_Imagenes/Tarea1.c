@@ -25,8 +25,8 @@ void leerArchivo(char *nombre_fichero,int filas, int columnas, unsigned char **m
 
     if(f1){
         //Lectura del fichero
-        for(int i = 0; i < filas; i++){
-            for(int j = 0; j < columnas; j++){
+        for(int i = 1; i <= filas; i++){
+            for(int j = 1; j <= columnas; j++){
                 fread(&matriz[i][j],sizeof(unsigned char), 1, f1);
             }
         }
@@ -36,6 +36,43 @@ void leerArchivo(char *nombre_fichero,int filas, int columnas, unsigned char **m
         printf("Error al abrir el fichero");
     }
 }
+
+
+void rellenarMatriz(unsigned char **matriz, int filas, int columnas){
+    int filas_relleno = filas +2;
+    int columnas_relleno = columnas + 2;
+
+    for(int i = 0;i<filas_relleno;i++){
+        for(int j = 0;j<columnas_relleno;j++){
+            
+            if(i == 0 || j == 0 || i == (filas_relleno-1) || j == (columnas_relleno-1)){
+                if(i == 0){
+                    if(i == 0 && j == 0){
+                        matriz[i][j] = matriz[i+2][j+2];
+                    }else if(i == 0 && j == (columnas_relleno - 1)){
+                        matriz[i][j] = matriz[i+2][j-2];
+                    }else {
+                        matriz[i][j] = matriz[i+2][j];
+                    }
+                }else if(i == (filas_relleno-1)){
+                    if(i == (filas_relleno - 1) && j == (columnas_relleno - 1)){
+                        matriz[i][j] = matriz[i-2][j-2];
+                    }else if(i == (filas_relleno - 1) && j == 0){
+                        matriz[i][j] = matriz[i-2][j+2] ;
+                    }else{
+                        matriz[i][j] = matriz[i-2][j] ;
+                    }
+                }else if(j == 0){
+                    matriz[i][j] = matriz[i][j+2];
+                }else if(j == (columnas_relleno-1)){
+                    matriz[i][j] = matriz[i][j-2];
+                }
+                
+            }
+        }
+    }
+}
+
 
 /**
  * @brief Guarda una imagen en formato raw, que es binario
@@ -47,8 +84,8 @@ void leerArchivo(char *nombre_fichero,int filas, int columnas, unsigned char **m
 void guardarImagenSalida(unsigned char **matrizSalida,char *imagen_salida, int filas, int columnas){
     FILE *f1;
     f1 = fopen(imagen_salida, "wb");
-    for(int i = 0;i<filas; i++){
-        for(int j = 0;j<columnas;j++){
+    for(int i = 1;i<=filas; i++){
+        for(int j = 1;j<=columnas;j++){
             fwrite(&matrizSalida[i][j],sizeof(unsigned char),1,f1);
         }
     }
@@ -92,16 +129,20 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int filas, int co
 
     unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
     int media = 0;
-    matrizSalida = (unsigned char **)malloc(filas*sizeof(unsigned char *));
-    for(int i = 0; i<filas;i++){
-        matrizSalida[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
+    int filas_rellenado = filas+2;
+    int columnas_rellenado = columnas +2;
+    
+    matrizSalida = (unsigned char **)malloc(filas_rellenado*sizeof(unsigned char *));
+    for(int i = 0; i<filas_rellenado;i++){
+        matrizSalida[i] = (unsigned char *)malloc(columnas_rellenado*sizeof(unsigned char));
     }
-
-    for(int i = 0;i<filas;i++){
-        for(int j = 0;j<columnas;j++){
+    
+    for(int i = 0;i<filas_rellenado;i++){
+        for(int j = 0;j<columnas_rellenado;j++){
+            media = 0;
             elementoSeleccionado = matriz[i][j];
             //printf("%c\n",elementoSeleccionado);
-            if(i == 0 || j == 0 || i == (filas-1) || j == (columnas-1)){
+            if(i == 0 || j == 0 || i == (filas_rellenado-1) || j == (columnas_rellenado-1)){
                 matrizSalida[i][j] == matriz[i][j];
             }else{
                 media = matriz[i-1][j-1] +matriz[i][j-1]+ matriz[i+1][j-1] +matriz[i-1][j] +matriz[i][j] +matriz[i+1][j] +matriz[i-1][j+1] + matriz[i][j+1] +matriz[i+1][j+1] ;
@@ -123,17 +164,18 @@ void filtradoMedia(unsigned char **matriz, char *imagen_salida,int filas, int co
 void filtradoMediana(unsigned char **matriz, char *imagen_salida, int filas, int columnas){
     
     unsigned char **matrizSalida, elementoSeleccionado,elementos[9];
-
-    matrizSalida = (unsigned char **)malloc(filas*sizeof(unsigned char *));
-    for(int i = 0; i<filas;i++){
-        matrizSalida[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
+    int filas_relleno = filas+2;
+    int columnas_relleno = columnas+2;
+    matrizSalida = (unsigned char **)malloc(filas_relleno*sizeof(unsigned char *));
+    for(int i = 0; i<filas_relleno;i++){
+        matrizSalida[i] = (unsigned char *)malloc(columnas_relleno*sizeof(unsigned char));
     }
-
-    for(int i = 0;i<filas;i++){
-        for(int j = 0;j<columnas;j++){
+    printf("Hola\n");
+    for(int i = 0;i<filas_relleno;i++){
+        for(int j = 0;j<columnas_relleno;j++){
             elementoSeleccionado = matriz[i][j];
 
-            if(i == 0 || j == 0 || i == (filas-1) || j == (columnas-1)){
+            if(i == 0 || j == 0 || i == (filas_relleno-1) || j == (columnas_relleno-1)){
                 matrizSalida[i][j] ==matriz[i][j];
             }else{
                 elementos[0] = matriz[i-1][j-1];
@@ -166,17 +208,19 @@ void filtradoMediana(unsigned char **matriz, char *imagen_salida, int filas, int
 void deteccionBordes(unsigned char **matriz, char *imagen_salida, int filas, int columnas){
     unsigned char **matrizSalida, elementoSeleccionado, elementos[9];
     int c = 0, f = 0;
-    matrizSalida = (unsigned char **)malloc(filas*sizeof(unsigned char *));
-    for(int i = 0; i<filas;i++){
-        matrizSalida[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
+    int filas_relleno = filas + 2;
+    int columnas_relleno = columnas +2;
+    matrizSalida = (unsigned char **)malloc(filas_relleno*sizeof(unsigned char *));
+    for(int i = 0; i<filas_relleno;i++){
+        matrizSalida[i] = (unsigned char *)malloc(columnas_relleno*sizeof(unsigned char));
     }
 
-    for(int i = 0;i<filas;i++){
-        for(int j = 0;j<columnas;j++){
+    for(int i = 0;i<filas_relleno;i++){
+        for(int j = 0;j<columnas_relleno;j++){
             elementoSeleccionado = matriz[i][j];
             
 
-            if(i == 0 || j == 0 || i == (filas-1) || j == (columnas-1)){
+            if(i == 0 || j == 0 || i == (filas_relleno-1) || j == (columnas_relleno-1)){
                 matrizSalida[i][j] ==matriz[i][j];
             }else{
                 elementos[0] = matriz[i-1][j-1];
@@ -260,26 +304,30 @@ int main(int argc, char *argv[]){
     imagen_salida = argv[2];
     fichero_salida = argv[3];
     tipo_proceso = argv[4];
-    filas = (int)argv[5];
-    columnas = (int)argv[6];
-    printf("Filas %d y columnas %d", filas,columnas);
+    filas = atoi(argv[5]);
+    columnas = atoi(argv[6]);
+
     strcat(imagen_entrada,".raw");
     strcat(imagen_salida,".raw"); 
     strcat(fichero_salida,".txt");
 
-    matriz = (unsigned char **)malloc(filas*sizeof(unsigned char *));
-    for(int i = 0;i < filas; i++){
-        matriz[i] = (unsigned char *)malloc(columnas*sizeof(unsigned char));
-    }
+    matriz = (unsigned char **)malloc((filas+2)*sizeof(unsigned char *));
+    for(int i = 0;i < (filas+2); i++){
+        matriz[i] = (unsigned char *)malloc((columnas+2)*sizeof(unsigned char));
+    } 
     //Lectura de matriz
     leerArchivo(imagen_entrada,filas, columnas,matriz);
     //guardarImagenSalida(matriz,imagen_salida,tamanyo_matriz);
     //return 0;
-
+    
+    rellenarMatriz(matriz, filas, columnas);
+    
     if(strcmp("MEDIA",tipo_proceso)==0){
+        
         filtradoMedia(matriz,imagen_salida,filas, columnas);
         
     }else if (strcmp("MEDIANA",tipo_proceso)==0){
+        
         filtradoMediana(matriz,imagen_salida,filas, columnas);
         
     }else if (strcmp("SOBEL",tipo_proceso)==0){
