@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <time.h>
+#include <mpi.h>
 #define ELEMENTOS 9
 
 /**
@@ -37,7 +38,13 @@ void leerArchivo(char *nombre_fichero,int filas, int columnas, unsigned char **m
     }
 }
 
-
+/**
+ * @brief Añade a la matriz original las columnas y filas necesarias para que no descrimine ningun caracter
+ * 
+ * @param matriz matriz que guarda la imagen
+ * @param filas número de filas de la imagen
+ * @param columnas numero de columnas de la imagen
+ */
 void rellenarMatriz(unsigned char **matriz, int filas, int columnas){
     int filas_relleno = filas +2;
     int columnas_relleno = columnas + 2;
@@ -279,7 +286,9 @@ int main(int argc, char *argv[]){
     clock_t t_inicio, t_fin;
     double t_ejecucion;
     t_inicio = clock();
-    
+    int nproces, myrank, ierr;
+    MPI_Status status;
+    MPI_Init(&argc,&argv);
     //Indicamos un parámetro de entrada que explique que información hay que pasar como parametro
     if(argc == 2 && strcmp("HELP",argv[1])==0){
         printf("Debes indicar el nombre de la imagen de entrada ,imange de salida, fichero de resultados de salida, sin formato, el tipo de proceso(MEDIA, MEDIANA O SOBEL) y el número de filas y columnas. Por ejemplo './Tarea1 fotoEntrada fotoSalida resultadosSalida MEDIA 512 512'\n");
