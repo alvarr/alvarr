@@ -283,53 +283,78 @@ void ficheroSalida(char *imagen_entrada , char *imagen_salida, char *fichero_sal
  * @return int 
  */
 int main(int argc, char *argv[]){
+
+    MPI_Status status;
+    MPI_Init(&argc,&argv);
+    
     clock_t t_inicio, t_fin;
     double t_ejecucion;
     t_inicio = clock();
     int nproces, myrank, ierr;
-    MPI_Status status;
-    MPI_Init(&argc,&argv);
+
+    MPI_Comm_size(MPI_COMM_WORLD,&nproces);
+    MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
+    
     //Indicamos un parámetro de entrada que explique que información hay que pasar como parametro
     if(argc == 2 && strcmp("HELP",argv[1])==0){
         printf("Debes indicar el nombre de la imagen de entrada ,imange de salida, fichero de resultados de salida, sin formato, el tipo de proceso(MEDIA, MEDIANA O SOBEL) y el número de filas y columnas. Por ejemplo './Tarea1 fotoEntrada fotoSalida resultadosSalida MEDIA 512 512'\n");
+        MPI_Finalize();
         return 0;
     }
         
     if(argc != 7){
         printf("Debes indicar varios paramentros. Para mas ayuda pasa como parametro HELP\n");
+        MPI_Finalize();
         return 0;
     }
 
-    struct stat sb;
     char *imagen_entrada,*imagen_salida, *tipo_proceso, *fichero_salida;
-    int filas, columnas;
+    int filas, columnas, *filas_por_proceso;
     char opcion;
     unsigned char **matriz;
-
-    //Como el tamanyo de un caracter unsigned char es de 1 byte leemos directamente 
-    //el tamanyo del fichero y una vez que tenemos el número de bytes hacemos la raiz cuadrada
-    //para saber la altura y la anchura de la matriz que es la misma cantidad
-    imagen_entrada = argv[1];
-    imagen_salida = argv[2];
-    fichero_salida = argv[3];
-    tipo_proceso = argv[4];
-    filas = atoi(argv[5]);
-    columnas = atoi(argv[6]);
-
-    strcat(imagen_entrada,".raw");
-    strcat(imagen_salida,".raw"); 
-    strcat(fichero_salida,".txt");
-
-    matriz = (unsigned char **)malloc((filas+2)*sizeof(unsigned char *));
-    for(int i = 0;i < (filas+2); i++){
-        matriz[i] = (unsigned char *)malloc((columnas+2)*sizeof(unsigned char));
-    } 
-    //Lectura de matriz
-    leerArchivo(imagen_entrada,filas, columnas,matriz);
-    //guardarImagenSalida(matriz,imagen_salida,tamanyo_matriz);
-    //return 0;
     
-    rellenarMatriz(matriz, filas, columnas);
+  
+    if(myrank == 0){
+
+        *filas_por_proceso = (int*)malloc(nproces*sizeof(int));
+        imagen_entrada = argv[1];
+        imagen_salida = argv[2];
+        fichero_salida = argv[3];
+        tipo_proceso = argv[4];
+
+        strcat(imagen_entrada,".raw");
+        strcat(imagen_salida,".raw"); 
+        strcat(fichero_salida,".txt");
+
+        filas = atoi(argv[5]);
+        columnas = atoi(argv[6]);
+        //Balanceo de carga
+        for(int i = 0;i<nproces;i++){
+            filas_por_proceso[i] = filas/nproces;
+        }
+        filas_por_proceso[i-1] += filas%nproces;
+
+        //Envio información de las filas que recibirá cada uno
+        for(int i = 1;i<nproces;i++){
+            MPI_Send(&filas_por_proceso[i],1,MPI_INT,i,99,MPI_COMM_WORLD);
+        }
+        
+        matriz = (unsigned char **)malloc((filas+2)*sizeof(unsigned char *));
+        for(int i = 0;i < (filas+2); i++){
+            matriz[i] = (unsigned char *)malloc((columnas+2)*sizeof(unsigned char));
+        } 
+        leerArchivo(imagen_entrada,filas, columnas,matriz);
+    
+        rellenarMatriz(matriz, filas, columnas);
+
+    }else{
+        
+        MPI_Recv(&filas,1,MPI_INT,0,99,MPI_COMM_WORLD,&status);
+        matriz = (int**)malloc((filas+2)*sizeof(int*));
+        for(int i = 0;i<(filas+2);i++){
+            matriz[i] = (int*)malloc((columnas+2)*sizeof(int));
+        }
+    }
     
     if(strcmp("MEDIA",tipo_proceso)==0){
         
@@ -350,6 +375,8 @@ int main(int argc, char *argv[]){
     t_ejecucion = ((double)(t_fin-t_inicio)/CLOCKS_PER_SEC)*1000;
 
     ficheroSalida(imagen_entrada, imagen_salida, fichero_salida, tipo_proceso, t_ejecucion, filas,  columnas);
-    return 0;
 
+    MPI_Finalize();
+
+    return 0;
 }
